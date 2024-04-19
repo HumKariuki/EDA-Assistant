@@ -86,8 +86,13 @@ if st.session_state.clicked_button:
             columns = df.columns
             selected_columns = st.multiselect("Select variables", columns)
             if len(selected_columns) > 0:
-                correlation = df[selected_columns].corr()
-                st.write(correlation)
+                numeric_columns = df.select_dtypes(include=['number']).columns
+                selected_numeric_columns = [col for col in selected_columns if col in numeric_columns]
+                if selected_numeric_columns:
+                    correlation = df[selected_numeric_columns].corr()
+                    st.write(correlation)
+                else:
+                    st.write("Please select numeric variables for correlation calculation.")
 
             # Check the skewness values in the dataset
             st.write("The skewness values in your dataset are:")
