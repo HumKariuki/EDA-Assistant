@@ -1,134 +1,118 @@
-#Bacic or must needed dependencies to import to start the project
-#import os
 import streamlit as st
 import pandas as pd
-#from tabulate import tabulate
 
-# For using LLM the necessary packages are imported
-#from langchain_community.llms import OpenAI
-#from langchain_experimental.agents import create_pandas_dataframe_agent
-#from dotenv import load_dotenv,find_dotenv
+# Initialize session state
+if 'clicked_button' not in st.session_state:
+    st.session_state.clicked_button = False
 
-#OpenAI API key which is already beign sorted and stored in other folder 
-#from apikey import apikey
+# Function to update session state
+def clicked():
+    st.session_state.clicked_button = True
 
-
-
-#OpenAI API key
-#os.environ['OPENAI_API_KEY'] = apikey
-#load_dotenv(find_dotenv())
-
-
-#title 
+# title 
 st.title("AI Assistant for Data Science 🤖")
 
-#welcoming message 
-st.write('Hello,👋🏼 I am your AI assistant and I am here to help your data science projects.')
+# welcoming message 
+st.write('Hello,👋🏼 I am your AI assistant and I am here to help with your data science projects.')
 
 # Explaination Sidebar
 with st.sidebar:
-    st.write('*Your Data Science Adventure Begins with an CSV file.*')
-    st.caption('''**You may already know that every exiting data science journey start with a dataset.
-            That's why I'd love for you to upload a CSV file . Once we have your data in hand , we'll
-            dive into understanding it and have some fun exploring it. Then, we'll work toghether
-            to shape your business challenges into a data science framework. I'llintroduce you to 
-            collest machine learning models, and we'll use them to tackle your problem. 
-            Sounds fun right!!**''')
+    st.write('*Your Data Science Adventure Begins with a CSV file.*')
+    st.caption('''**You may already know that every exciting data science journey starts with a dataset.
+            That's why I'd love for you to upload a CSV file. Once we have your data in hand, we'll
+            dive into understanding it and have some fun exploring it. Then, we'll work together
+            to shape your business challenges into a data science framework. I'll introduce you to 
+            the coolest machine learning models, and we'll use them to tackle your problem. 
+            Sounds fun, right?!**''')
     
-    #divider is used to create a line between the two sections
+    # divider to create a line between the two sections
     st.divider()
     
-    #caption is used to add the text in the center
-    st.caption("<p style = 'text-align:center'> Design And Developed by 🫱🏻‍🫲🏼: Japanjot Singh</p>" , unsafe_allow_html=True)
+    # caption to add text in the center
+    st.caption("<p style='text-align:center'>Designed and Developed by 🫱🏻‍🫲🏼: Japanjot Singh</p>", unsafe_allow_html=True)
 
-#Initialise the key in session state
-if 'clicked' not in st.session_state:
-    st.session_state.clicked = {1:False}
+# Button to initiate the process
+if not st.session_state.clicked_button:
+    if st.button("Let's get started", on_click=clicked):
+        st.session_state.clicked_button = True
 
-#Function to update the key in the session state 
-def clicked(button):
-    st.session_state.clicked[button] = True
-st.button("let's get started", on_click=clicked, args=[1])
-if st.session_state.clicked[1]:
+# Check if the button was clicked
+if st.session_state.clicked_button:
     df = st.file_uploader('Upload your CSV file here', type="csv")
     if df is not None:
-         df.seek(0)
-         df = pd.read_csv(df , low_memory=False)
+        df.seek(0)
+        df = pd.read_csv(df, low_memory=False)
 
-         #LLM model 
-         #llm = OpenAI(temperature = 0) 
+        # Main Function
+        def main(): 
+            st.write("**Data Overview**")
+            st.write("The first few rows of your dataset look like this:")
+            st.write(df.head())  
 
-         #Pandas agent 
-         #pandas_agent = create_pandas_dataframe_agent(llm,df,verbose=True)
+            # Preprocessing of Data
+            st.write("**Preprocessing of Data**" )
 
+            # Check the shape of the dataset
+            st.write("The shape of your dataset is:")
+            st.write(df.shape) 
 
-         #Main Function
-         def main(): 
-           #display the dataset
-           st.write("**Data Overvirw**")
-           st.write("The first row of your dataset look like this:")
-           head_data = pd.DataFrame(df.head())
-           st.write(head_data)  
-           #Preprocessing work starts from here!!
-           st.write("**Preprocessing of Data**" )
-           #check the shape of the dataset
-           st.write("The shape of your dataset is:")
-           st.write(df.shape) 
-           #check the columns of the dataset
-           st.write("The columns of your dataset are:")
-           st.write(df.columns)  
-           #check the datatypes of the dataset
-           st.write("The datatypes of your dataset are:")
-           st.write(df.dtypes)  
-           #check the missing values in the dataset
-           st.write("The missing values in your dataset are:")
-           st.write(df.isnull().sum())  
-           #check the unique values in the dataset
-           st.write("The unique values in your dataset are:")
-           st.write(df.nunique())  
-           #check the duplicate values in the dataset
-           st.write("The duplicate values in your dataset are:")
-           st.write(df.duplicated().sum()) 
-           #check the statistical values in the dataset
-           st.write("The statistical values in your dataset are:")
-           st.write(df.describe())  
-           #check the correlation values in the dataset
-           st.write("The correlation values in your dataset are:")
-           correlation =  pd.DataFrame(df.corr()) 
-           st.write(correlation)
-           #check the skewness values in the dataset
-           st.write("The skewness values in your dataset are:")
-           st.write(df.skew()) 
-           #check the kurtosis values in the dataset
-           st.write("The kurtosis values in your dataset are:")
-           st.write(df.kurt())
-           # line chart for the data 
-           st.write("The line chart for your dataset is:")
-           user_column = st.selectbox("Select the column for line chart" , df.columns)
-           st.line_chart(df , y = [user_column]) 
+            # Check the columns of the dataset
+            st.write("The columns of your dataset are:")
+            st.write(df.columns)  
 
-           # bar chart for the data
-           st.write("The bar chart for your dataset is:")
-           user_column = st.selectbox("Select the column for bar chart" , df.columns)
-           st.bar_chart(df , y = [user_column])
-           # area chart for the data
-           st.write("The area chart for your dataset is:")
-           user_column = st.selectbox("Select the column for area chart" , df.columns)
-           st.area_chart(df , y = [user_column])
-        
-           #how to display special data in streamlit
-           st.write("The Special description for your dataset is given below in the information section:")
+            # Check the datatypes of the dataset
+            st.write("The datatypes of your dataset are:")
+            st.write(df.dtypes)  
 
-           
-         main()
+            # Check the missing values in the dataset
+            st.write("The missing values in your dataset are:")
+            st.write(df.isnull().sum())  
 
-         #def df():
-           #description = st.info(pandas_agent.run(f"check the data and check is there any problem in the data{df}"))
-           #st.write(description)
-           #st.write("Is there any other issue in the dataset let's check!!")
-           #solution = st.info(pandas_agent.run(f"if the dataset contains any other issue and provide a solution for that{df}"))
-           #st.write(solution)
-           #st.balloons()
-           #return 
-         #df()
+            # Check the unique values in the dataset
+            st.write("The unique values in your dataset are:")
+            st.write(df.nunique())  
 
+            # Check the duplicate values in the dataset
+            st.write("The duplicate values in your dataset are:")
+            st.write(df.duplicated().sum()) 
+
+            # Check the statistical values in the dataset
+            st.write("The statistical values in your dataset are:")
+            st.write(df.describe())  
+
+            # Check the correlation values in the dataset
+            st.write("**Correlation Analysis**")
+            st.write("Select variables to calculate correlation:")
+            columns = df.columns
+            selected_columns = st.multiselect("Select variables", columns)
+            if len(selected_columns) > 0:
+                correlation = df[selected_columns].corr()
+                st.write(correlation)
+
+            # Check the skewness values in the dataset
+            st.write("The skewness values in your dataset are:")
+            st.write(df.skew()) 
+
+            # Check the kurtosis values in the dataset
+            st.write("The kurtosis values in your dataset are:")
+            st.write(df.kurt())
+
+            # Line chart for the data 
+            st.write("The line chart for your dataset is:")
+            user_column = st.selectbox("Select the column for line chart", df.columns)
+            st.line_chart(df, y=[user_column]) 
+
+            # Bar chart for the data
+            st.write("The bar chart for your dataset is:")
+            user_column = st.selectbox("Select the column for bar chart", df.columns)
+            st.bar_chart(df, y=[user_column])
+
+            # Area chart for the data
+            st.write("The area chart for your dataset is:")
+            user_column = st.selectbox("Select the column for area chart", df.columns)
+            st.area_chart(df, y=[user_column])
+
+            # How to display special data in streamlit
+            st.write("The Special description for your dataset is given below in the information section:")
+
+        main()
