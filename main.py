@@ -2,6 +2,10 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+from PIL import Image
+
+# Disable warnings
+st.set_option('deprecation.showPyplotGlobalUse', False)
 
 # Initialize session state
 if 'clicked_button' not in st.session_state:
@@ -93,36 +97,66 @@ def analyze_data(df):
             st.write("The regression analysis for selected continuous variables:")
             st.write(df[selected_numeric_columns].corr())
 
+    # Additional analysis options
+    st.subheader("Additional Analysis Options")
+
+    # Scatter plot
+    selected_scatter_columns = st.multiselect("Select variables for scatter plot analysis:", numeric_columns)
+    if len(selected_scatter_columns) == 2:
+        st.write("Scatter plot:")
+        plt.figure(figsize=(10, 6))
+        sns.scatterplot(x=selected_scatter_columns[0], y=selected_scatter_columns[1], data=df)
+        st.pyplot()
+
+    # Correlation heatmap
+    if st.checkbox("Display correlation heatmap"):
+        st.write("Correlation heatmap:")
+        plt.figure(figsize=(12, 8))
+        sns.heatmap(df.corr(), annot=True, cmap='coolwarm', linewidths=.5)
+        st.pyplot()
+
+    # Pairplot
+    if st.checkbox("Display pairplot"):
+        st.write("Pairplot:")
+        sns.pairplot(df[selected_numeric_columns])
+        st.pyplot()
+
+    # Distribution plot
+    selected_dist_columns = st.multiselect("Select variables for distribution plot analysis:", numeric_columns)
+    if selected_dist_columns:
+        for column in selected_dist_columns:
+            st.write(f"Distribution plot for {column}:")
+            plt.figure(figsize=(10, 6))
+            sns.histplot(df[column], kde=True)
+            st.pyplot()
+
 # Title 
-st.title("AI Assistant for Data Science 🤖")
+st.title("🤖 AI Assistant for Data Science")
 
 # Welcoming message 
-st.write('Hello,👋🏼 I am your AI assistant and I am here to help with your data science projects.')
+st.write('**Hello!** I am your AI assistant and I am here to help with your data science projects.')
+st.write('**Let\'s explore your data together!**')
 
 # Explaination Sidebar
 with st.sidebar:
-    st.write('*Your Data Science Adventure Begins with a CSV file.*')
-    st.caption('''**You may already know that every exciting data science journey starts with a dataset.
+    st.write('**Your Data Science Adventure Begins with a CSV file.**')
+    st.caption('''You may already know that every exciting data science journey starts with a dataset.
             That's why I'd love for you to upload a CSV file. Once we have your data in hand, we'll
             dive into understanding it and have some fun exploring it. Then, we'll work together
             to shape your business challenges into a data science framework. I'll introduce you to 
             the coolest machine learning models, and we'll use them to tackle your problem. 
-            Sounds fun, right?!**''')
-    
-    # Divider to create a line between the two sections
-    st.divider()
-    
-    # Caption to add text in the center
+            Sounds fun, right?!''')
+    st.image(Image.open("data_science.png"), use_column_width=True)
     st.caption("<p style='text-align:center'>Designed and Developed by 🫱🏻‍🫲🏼: Japanjot Singh</p>", unsafe_allow_html=True)
 
 # Button to initiate the process
 if not st.session_state.clicked_button:
-    if st.button("Let's get started", on_click=clicked):
+    if st.button("🚀 Let's get started", on_click=clicked):
         st.session_state.clicked_button = True
 
 # Check if the button was clicked
 if st.session_state.clicked_button:
-    df = st.file_uploader('Upload your CSV file here', type="csv")
+    df = st.file_uploader('📁 Upload your CSV file here', type="csv")
     if df is not None:
         df = pd.read_csv(df)
         analyze_data(df)
