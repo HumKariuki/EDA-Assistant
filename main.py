@@ -1,3 +1,22 @@
+import streamlit as st
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import requests
+from PIL import Image
+from io import BytesIO
+
+# Disable warnings
+st.set_option('deprecation.showPyplotGlobalUse', False)
+
+# Initialize session state
+if 'clicked_button' not in st.session_state:
+    st.session_state.clicked_button = False
+
+# Function to update session state
+def clicked():
+    st.session_state.clicked_button = True
+
 def analyze_data(df):
     st.write("**Data Overview**")
     st.write("The first few rows of your dataset look like this:")
