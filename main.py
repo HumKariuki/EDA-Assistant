@@ -4,12 +4,12 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 # Initialize session state
-if 'selected_columns' not in st.session_state:
-    st.session_state.selected_columns = {}
+if 'clicked_button' not in st.session_state:
+    st.session_state.clicked_button = False
 
 # Function to update session state
-def update_selected_columns(step, selected_columns):
-    st.session_state.selected_columns[step] = selected_columns
+def clicked():
+    st.session_state.clicked_button = True
 
 # Function to handle data analysis
 def analyze_data(df):
@@ -36,80 +36,62 @@ def analyze_data(df):
     st.write("The missing values in your dataset are:")
     st.write(df.isnull().sum())  
 
-    # Allow users to select variables for each analysis step
-    selected_columns_summary_stats = st.multiselect("Select variables for Summary Statistics:", df.columns)
-    update_selected_columns("Summary Statistics", selected_columns_summary_stats)
+    # Allow users to select columns for further analysis
+    selected_columns = st.multiselect("Select variables for further analysis:", df.columns)
 
-    selected_columns_skewness = st.multiselect("Select variables for Skewness Analysis:", df.columns)
-    update_selected_columns("Skewness Analysis", selected_columns_skewness)
+    if not selected_columns:
+        return
 
-    selected_columns_kurtosis = st.multiselect("Select variables for Kurtosis Analysis:", df.columns)
-    update_selected_columns("Kurtosis Analysis", selected_columns_kurtosis)
+    # Categorical variable analysis
+    st.subheader("Categorical Variable Analysis")
+    categorical_columns = df.select_dtypes(include=['object']).columns.tolist()
+    selected_categorical_columns = st.multiselect("Select categorical variables for analysis:", categorical_columns)
 
-    selected_columns_line_chart = st.multiselect("Select variables for Line Chart:", df.columns)
-    update_selected_columns("Line Chart", selected_columns_line_chart)
-
-    selected_columns_categorical = st.multiselect("Select categorical variables for analysis:", df.select_dtypes(include='object').columns)
-    update_selected_columns("Categorical Analysis", selected_columns_categorical)
-
-    selected_columns_continuous = st.multiselect("Select continuous variables for analysis:", df.select_dtypes(exclude='object').columns)
-    update_selected_columns("Continuous Analysis", selected_columns_continuous)
-
-    # Perform analysis based on selected columns
-    if selected_columns_summary_stats:
-        st.write("Summary Statistics for Selected Variables:")
-        st.write(df[selected_columns_summary_stats].describe())
-
-    if selected_columns_skewness:
-        st.write("The skewness values for selected variables are:")
-        st.write(df[selected_columns_skewness].skew())
-
-    if selected_columns_kurtosis:
-        st.write("The kurtosis values for selected variables are:")
-        st.write(df[selected_columns_kurtosis].kurt())
-
-    if selected_columns_line_chart:
-        for column in selected_columns_line_chart:
-            st.write(f"The line chart for {column}:")
-            st.line_chart(df[column])
-
-    if selected_columns_categorical:
-        st.write("Categorical Data Analysis:")
-        for column in selected_columns_categorical:
-            st.write(f"Frequency bar graph for {column}:")
-            plt.figure(figsize=(8, 6))
+    if selected_categorical_columns:
+        # Frequency bar graph
+        for column in selected_categorical_columns:
+            st.write(f"The frequency bar graph for {column}:")
+            plt.figure(figsize=(10, 6))
             sns.countplot(x=column, data=df)
+            plt.xticks(rotation=45)
             st.pyplot()
 
-            st.write(f"Multivariate analysis for {column} with target variable:")
-            target_variable = st.selectbox("Select target variable:", df.columns)
-            if target_variable != column:
-                plt.figure(figsize=(8, 6))
-                sns.countplot(x=column, hue=target_variable, data=df)
-                st.pyplot()
+        # Multivariate analysis (if more than one categorical variable selected)
+        if len(selected_categorical_columns) > 1:
+            st.write("The multivariate analysis for selected categorical variables:")
+            st.write(df[selected_categorical_columns].value_counts())
 
-    if selected_columns_continuous:
-        st.write("Continuous Data Analysis:")
-        for column in selected_columns_continuous:
-            st.write(f"Descriptive statistics for {column}:")
-            st.write(df[column].describe())
+    # Continuous variable analysis
+    st.subheader("Continuous Variable Analysis")
+    numeric_columns = df.select_dtypes(include=['float64', 'int64']).columns.tolist()
+    selected_numeric_columns = st.multiselect("Select continuous variables for analysis:", numeric_columns)
 
-            st.write(f"Histogram for {column}:")
-            plt.figure(figsize=(8, 6))
-            sns.histplot(df[column], kde=True)
+    if selected_numeric_columns:
+        # Descriptive statistics
+        if st.checkbox("Display descriptive statistics for selected variables"):
+            st.write("Summary Statistics for Selected Continuous Variables:")
+            st.write(df[selected_numeric_columns].describe())
+
+        # Histogram
+        for column in selected_numeric_columns:
+            st.write(f"The histogram for {column}:")
+            plt.figure(figsize=(10, 6))
+            plt.hist(df[column], bins='auto')
+            plt.xlabel(column)
+            plt.ylabel("Frequency")
             st.pyplot()
 
-            st.write(f"Box plot for {column}:")
-            plt.figure(figsize=(8, 6))
-            sns.boxplot(y=df[column])
+        # Box plot
+        for column in selected_numeric_columns:
+            st.write(f"The box plot for {column}:")
+            plt.figure(figsize=(10, 6))
+            sns.boxplot(x=column, data=df)
             st.pyplot()
 
-            st.write(f"Regression analysis for {column}:")
-            target_variable = st.selectbox("Select target variable:", df.columns)
-            if target_variable != column:
-                plt.figure(figsize=(8, 6))
-                sns.regplot(x=column, y=target_variable, data=df)
-                st.pyplot()
+        # Regression analysis (if more than one continuous variable selected)
+        if len(selected_numeric_columns) > 1:
+            st.write("The regression analysis for selected continuous variables:")
+            st.write(df[selected_numeric_columns].corr())
 
 # Title 
 st.title("AI Assistant for Data Science 🤖")
@@ -134,7 +116,12 @@ with st.sidebar:
     st.caption("<p style='text-align:center'>Designed and Developed by 🫱🏻‍🫲🏼: Japanjot Singh</p>", unsafe_allow_html=True)
 
 # Button to initiate the process
-if st.button("Let's get started"):
+if not st.session_state.clicked_button:
+    if st.button("Let's get started", on_click=clicked):
+        st.session_state.clicked_button = True
+
+# Check if the button was clicked
+if st.session_state.clicked_button:
     df = st.file_uploader('Upload your CSV file here', type="csv")
     if df is not None:
         df = pd.read_csv(df)
