@@ -1,13 +1,15 @@
 import streamlit as st
 import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 # Initialize session state
-if 'clicked_button' not in st.session_state:
-    st.session_state.clicked_button = False
+if 'selected_columns' not in st.session_state:
+    st.session_state.selected_columns = {}
 
 # Function to update session state
-def clicked():
-    st.session_state.clicked_button = True
+def update_selected_columns(step, selected_columns):
+    st.session_state.selected_columns[step] = selected_columns
 
 # Function to handle data analysis
 def analyze_data(df):
@@ -34,37 +36,80 @@ def analyze_data(df):
     st.write("The missing values in your dataset are:")
     st.write(df.isnull().sum())  
 
-    # Allow users to select columns for further analysis
-    selected_columns = st.multiselect("Select variables for further analysis:", df.columns)
+    # Allow users to select variables for each analysis step
+    selected_columns_summary_stats = st.multiselect("Select variables for Summary Statistics:", df.columns)
+    update_selected_columns("Summary Statistics", selected_columns_summary_stats)
 
-    # Check if any columns are selected
-    if selected_columns:
-        # Display summary statistics for selected columns
+    selected_columns_skewness = st.multiselect("Select variables for Skewness Analysis:", df.columns)
+    update_selected_columns("Skewness Analysis", selected_columns_skewness)
+
+    selected_columns_kurtosis = st.multiselect("Select variables for Kurtosis Analysis:", df.columns)
+    update_selected_columns("Kurtosis Analysis", selected_columns_kurtosis)
+
+    selected_columns_line_chart = st.multiselect("Select variables for Line Chart:", df.columns)
+    update_selected_columns("Line Chart", selected_columns_line_chart)
+
+    selected_columns_categorical = st.multiselect("Select categorical variables for analysis:", df.select_dtypes(include='object').columns)
+    update_selected_columns("Categorical Analysis", selected_columns_categorical)
+
+    selected_columns_continuous = st.multiselect("Select continuous variables for analysis:", df.select_dtypes(exclude='object').columns)
+    update_selected_columns("Continuous Analysis", selected_columns_continuous)
+
+    # Perform analysis based on selected columns
+    if selected_columns_summary_stats:
         st.write("Summary Statistics for Selected Variables:")
-        st.write(df[selected_columns].describe())
+        st.write(df[selected_columns_summary_stats].describe())
 
-        # Check skewness for selected columns
+    if selected_columns_skewness:
         st.write("The skewness values for selected variables are:")
-        st.write(df[selected_columns].skew())
+        st.write(df[selected_columns_skewness].skew())
 
-        # Check kurtosis for selected columns
+    if selected_columns_kurtosis:
         st.write("The kurtosis values for selected variables are:")
-        st.write(df[selected_columns].kurt())
+        st.write(df[selected_columns_kurtosis].kurt())
 
-        # Line chart for the selected columns
-        for column in selected_columns:
+    if selected_columns_line_chart:
+        for column in selected_columns_line_chart:
             st.write(f"The line chart for {column}:")
             st.line_chart(df[column])
 
-        # Bar chart for the selected columns
-        for column in selected_columns:
-            st.write(f"The bar chart for {column}:")
-            st.bar_chart(df[column])
+    if selected_columns_categorical:
+        st.write("Categorical Data Analysis:")
+        for column in selected_columns_categorical:
+            st.write(f"Frequency bar graph for {column}:")
+            plt.figure(figsize=(8, 6))
+            sns.countplot(x=column, data=df)
+            st.pyplot()
 
-        # Area chart for the selected columns
-        for column in selected_columns:
-            st.write(f"The area chart for {column}:")
-            st.area_chart(df[column])
+            st.write(f"Multivariate analysis for {column} with target variable:")
+            target_variable = st.selectbox("Select target variable:", df.columns)
+            if target_variable != column:
+                plt.figure(figsize=(8, 6))
+                sns.countplot(x=column, hue=target_variable, data=df)
+                st.pyplot()
+
+    if selected_columns_continuous:
+        st.write("Continuous Data Analysis:")
+        for column in selected_columns_continuous:
+            st.write(f"Descriptive statistics for {column}:")
+            st.write(df[column].describe())
+
+            st.write(f"Histogram for {column}:")
+            plt.figure(figsize=(8, 6))
+            sns.histplot(df[column], kde=True)
+            st.pyplot()
+
+            st.write(f"Box plot for {column}:")
+            plt.figure(figsize=(8, 6))
+            sns.boxplot(y=df[column])
+            st.pyplot()
+
+            st.write(f"Regression analysis for {column}:")
+            target_variable = st.selectbox("Select target variable:", df.columns)
+            if target_variable != column:
+                plt.figure(figsize=(8, 6))
+                sns.regplot(x=column, y=target_variable, data=df)
+                st.pyplot()
 
 # Title 
 st.title("AI Assistant for Data Science 🤖")
@@ -89,12 +134,7 @@ with st.sidebar:
     st.caption("<p style='text-align:center'>Designed and Developed by 🫱🏻‍🫲🏼: Japanjot Singh</p>", unsafe_allow_html=True)
 
 # Button to initiate the process
-if not st.session_state.clicked_button:
-    if st.button("Let's get started", on_click=clicked):
-        st.session_state.clicked_button = True
-
-# Check if the button was clicked
-if st.session_state.clicked_button:
+if st.button("Let's get started"):
     df = st.file_uploader('Upload your CSV file here', type="csv")
     if df is not None:
         df = pd.read_csv(df)
