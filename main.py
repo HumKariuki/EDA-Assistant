@@ -1,23 +1,3 @@
-import streamlit as st
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-import requests
-from PIL import Image
-from io import BytesIO
-
-# Disable warnings
-st.set_option('deprecation.showPyplotGlobalUse', False)
-
-# Initialize session state
-if 'clicked_button' not in st.session_state:
-    st.session_state.clicked_button = False
-
-# Function to update session state
-def clicked():
-    st.session_state.clicked_button = True
-
-# Function to handle data analysis
 def analyze_data(df):
     st.write("**Data Overview**")
     st.write("The first few rows of your dataset look like this:")
@@ -112,16 +92,24 @@ def analyze_data(df):
 
     # Correlation heatmap
     if st.checkbox("Display correlation heatmap"):
-        st.write("Correlation heatmap:")
-        plt.figure(figsize=(12, 8))
-        sns.heatmap(df.corr(), annot=True, cmap='coolwarm', linewidths=.5)
-        st.pyplot()
+        if df[selected_numeric_columns].isnull().sum().sum() == 0:  # Check for missing values
+            st.write("Correlation heatmap:")
+            plt.figure(figsize=(12, 8))
+            sns.heatmap(df[selected_numeric_columns].corr(), annot=True, cmap='coolwarm', linewidths=.5)
+            st.pyplot()
+        else:
+            st.warning("Correlation heatmap cannot be generated due to missing values in the selected columns.")
 
     # Pairplot
     if st.checkbox("Display pairplot"):
-        st.write("Pairplot:")
-        sns.pairplot(df[selected_numeric_columns])
-        st.pyplot()
+        if len(selected_numeric_columns) >= 2 and df[selected_numeric_columns].isnull().sum().sum() == 0:
+            st.write("Pairplot:")
+            sns.pairplot(df[selected_numeric_columns])
+            st.pyplot()
+        elif len(selected_numeric_columns) < 2:
+            st.warning("Pairplot requires at least two selected numeric columns.")
+        else:
+            st.warning("Pairplot cannot be generated due to missing values in the selected columns.")
 
     # Distribution plot
     selected_dist_columns = st.multiselect("Select variables for distribution plot analysis:", numeric_columns)
@@ -131,6 +119,7 @@ def analyze_data(df):
             plt.figure(figsize=(10, 6))
             sns.histplot(df[column], kde=True)
             st.pyplot()
+
 
 # Title 
 st.title("🤖 AI Assistant for Data Science")
