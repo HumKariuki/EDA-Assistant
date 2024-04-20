@@ -2,7 +2,9 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import requests
 from PIL import Image
+from io import BytesIO
 
 # Disable warnings
 st.set_option('deprecation.showPyplotGlobalUse', False)
@@ -146,7 +148,7 @@ with st.sidebar:
             to shape your business challenges into a data science framework. I'll introduce you to 
             the coolest machine learning models, and we'll use them to tackle your problem. 
             Sounds fun, right?!''')
-    st.image(Image.open("data_science.png"), use_column_width=True)
+    st.image("https://www.streamlit.io/images/brand/streamlit-logo-primary-colormark-darktext.png", use_column_width=True)
     st.caption("<p style='text-align:center'>Designed and Developed by 🫱🏻‍🫲🏼: Japanjot Singh</p>", unsafe_allow_html=True)
 
 # Button to initiate the process
