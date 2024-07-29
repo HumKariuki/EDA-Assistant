@@ -1,13 +1,10 @@
-import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
 import requests
-from PIL import Image
+import seaborn as sns
+import streamlit as st
 from io import BytesIO
-
-# Disable warnings
-st.set_option('deprecation.showPyplotGlobalUse', False)
+from PIL import Image
+import matplotlib.pyplot as plt
 
 # Initialize session state
 if 'clicked_button' not in st.session_state:
@@ -23,7 +20,7 @@ def analyze_data(df):
     st.write(df.head())  
 
     # Preprocessing of Data
-    st.write("**Preprocessing of Data**" )
+    st.write("**Preprocessing of Data**")
 
     # Check the shape of the dataset
     st.write("The shape of your dataset is:")
@@ -147,7 +144,7 @@ st.title("🤖 AI Assistant for Data Science")
 st.write('**Hello!** I am your AI assistant and I am here to help with your data science projects.')
 st.write('**Let\'s explore your data together!**')
 
-# Explaination Sidebar
+# Explanation Sidebar
 with st.sidebar:
     st.write('**Your Data Science Adventure Begins with a CSV file.**')
     st.caption('''You may already know that every exciting data science journey starts with a dataset.
